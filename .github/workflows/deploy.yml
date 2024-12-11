@@ -25,10 +25,12 @@ jobs:
         docker push 800067001720.dkr.ecr.ap-northeast-1.amazonaws.com/my-fastapi-app:${{ github.ref_name }}
 
     - name: Update AWS Lambda
-      run: |
-        aws lambda update-function-code \
-          --function-name Hello-${{ github.ref_name }} \
-          --image-uri 800067001720.dkr.ecr.ap-northeast-1.amazonaws.com/my-fastapi-app:${{ github.ref_name }}
+  run: |
+    aws lambda update-function-code \
+      --function-name Hello-${{ github.ref_name }} \
+      --image-uri 800067001720.dkr.ecr.ap-northeast-1.amazonaws.com/my-fastapi-app:${{ github.ref_name }} \
+      --region ap-northeast-1
+
 
     env:
       AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
