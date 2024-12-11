@@ -4,7 +4,7 @@ on:
   push:
     branches:
       - staging  # ステージング環境
-      - main     # 本番環境
+      - main     #  本番環境
 
 jobs:
   deploy:
