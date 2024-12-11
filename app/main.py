@@ -1,6 +1,7 @@
-from mangum import Mangum
+from fastapi import FastAPI
+import os
+from mangum import Mangum  # Mangumをインポート
 
-# 既存のFastAPIアプリ
 app = FastAPI()
 
 @app.get("/")
