@@ -11,6 +11,7 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
+    # コードのチェックアウト
     - name: Checkout code
       uses: actions/checkout@v2
 
@@ -33,23 +34,28 @@ jobs:
     # ECS サービスを更新
     - name: Update ECS Service
       run: |
-        SERVICE_NAME=$([[ $ENVIRONMENT == 'main' ]] && echo "fastapi-production-service" || echo "fastapi-staging-service")
+        SERVICE_NAME=$([[ "${{ github.ref_name }}" == "main" ]] && echo "fastapi-production-service" || echo "fastapi-staging-service")
         aws ecs update-service \
           --cluster my-fargate-cluster \
           --service $SERVICE_NAME \
           --force-new-deployment \
           --region ap-northeast-1
 
-    # ログ取得 (デプロイが失敗した場合に有効)
+    # デプロイ失敗時のタスクステータス確認
     - name: Check ECS Task Status
       if: failure()
       run: |
-        aws ecs describe-tasks \
-          --cluster my-fargate-cluster \
-          --tasks $(aws ecs list-tasks --cluster my-fargate-cluster --desired-status RUNNING --query 'taskArns[]' --output text) \
-          --region ap-northeast-1
+        SERVICE_NAME=$([[ "${{ github.ref_name }}" == "main" ]] && echo "fastapi-production-service" || echo "fastapi-staging-service")
+        TASK_ARN=$(aws ecs list-tasks --cluster my-fargate-cluster --service-name $SERVICE_NAME --desired-status RUNNING --query 'taskArns[0]' --output text --region ap-northeast-1)
+        if [ "$TASK_ARN" != "None" ]; then
+          aws ecs describe-tasks \
+            --cluster my-fargate-cluster \
+            --tasks $TASK_ARN \
+            --region ap-northeast-1
+        else
+          echo "No running tasks found for service $SERVICE_NAME"
+        fi
 
     env:
       AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
       AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
-      
