@@ -4,6 +4,7 @@ on:
   push:
     branches:
       - staging
+      - main
 
 jobs:
   deploy:
@@ -13,28 +14,36 @@ jobs:
     - name: Checkout code
       uses: actions/checkout@v2
 
-    - name: Setup AWS CLI
-      run: |
-        sudo apt-get update && sudo apt-get install -y awscli
-        aws --version
+    # 環境変数の設定
+    - name: Set environment variables
+      run: echo "ENVIRONMENT=${{ github.ref_name }}" >> $GITHUB_ENV
 
+    # Amazon ECR ログイン
     - name: Log in to Amazon ECR
       run: |
         aws ecr get-login-password --region ap-northeast-1 | docker login --username AWS --password-stdin 800067001720.dkr.ecr.ap-northeast-1.amazonaws.com
 
+    # Docker イメージをビルドしてプッシュ
     - name: Build and Push Docker image
       run: |
-        IMAGE_TAG=my-fastapi-app:${{ github.sha }}
+        IMAGE_TAG=800067001720.dkr.ecr.ap-northeast-1.amazonaws.com/my-fastapi-app:${{ github.sha }}
         docker build -t $IMAGE_TAG .
-        docker tag $IMAGE_TAG 800067001720.dkr.ecr.ap-northeast-1.amazonaws.com/$IMAGE_TAG
-        docker push 800067001720.dkr.ecr.ap-northeast-1.amazonaws.com/$IMAGE_TAG
+        docker push $IMAGE_TAG
 
+    # ECS サービスを更新
     - name: Update ECS Service
       run: |
+        SERVICE_NAME=$([[ $ENVIRONMENT == 'main' ]] && echo "fastapi-production-service" || echo "fastapi-staging-service")
         aws ecs update-service \
           --cluster my-fargate-cluster \
-          --service fastapi-staging-service \
+          --service $SERVICE_NAME \
           --force-new-deployment
+
+    # ログ取得 (デプロイが失敗した場合に有効)
+    - name: Check ECS Task Status
+      if: failure()
+      run: |
+        aws ecs describe-tasks --cluster my-fargate-cluster --tasks $(aws ecs list-tasks --cluster my-fargate-cluster --desired-status RUNNING --query 'taskArns[]' --output text)
 
     env:
       AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
