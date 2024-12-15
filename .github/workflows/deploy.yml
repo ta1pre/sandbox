@@ -37,13 +37,17 @@ jobs:
         aws ecs update-service \
           --cluster my-fargate-cluster \
           --service $SERVICE_NAME \
-          --force-new-deployment
+          --force-new-deployment \
+          --region ap-northeast-1
 
     # ログ取得 (デプロイが失敗した場合に有効)
     - name: Check ECS Task Status
       if: failure()
       run: |
-        aws ecs describe-tasks --cluster my-fargate-cluster --tasks $(aws ecs list-tasks --cluster my-fargate-cluster --desired-status RUNNING --query 'taskArns[]' --output text)
+        aws ecs describe-tasks \
+          --cluster my-fargate-cluster \
+          --tasks $(aws ecs list-tasks --cluster my-fargate-cluster --desired-status RUNNING --query 'taskArns[]' --output text) \
+          --region ap-northeast-1
 
     env:
       AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
