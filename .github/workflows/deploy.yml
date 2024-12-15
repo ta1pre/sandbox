@@ -1,10 +1,9 @@
-name: Deploy to AWS Lambda
+name: Deploy to AWS Fargate
 
 on:
   push:
     branches:
       - staging
-      - main
 
 jobs:
   deploy:
@@ -14,24 +13,29 @@ jobs:
     - name: Checkout code
       uses: actions/checkout@v2
 
+    - name: Setup AWS CLI
+      run: |
+        sudo apt-get update && sudo apt-get install -y awscli
+        aws --version
+
     - name: Log in to Amazon ECR
       run: |
         aws ecr get-login-password --region ap-northeast-1 | docker login --username AWS --password-stdin 800067001720.dkr.ecr.ap-northeast-1.amazonaws.com
 
     - name: Build and Push Docker image
       run: |
-        docker build -t my-fastapi-app .
-        docker tag my-fastapi-app:latest 800067001720.dkr.ecr.ap-northeast-1.amazonaws.com/my-fastapi-app:${{ github.ref_name }}
-        docker push 800067001720.dkr.ecr.ap-northeast-1.amazonaws.com/my-fastapi-app:${{ github.ref_name }}
+        IMAGE_TAG=my-fastapi-app:${{ github.sha }}
+        docker build -t $IMAGE_TAG .
+        docker tag $IMAGE_TAG 800067001720.dkr.ecr.ap-northeast-1.amazonaws.com/$IMAGE_TAG
+        docker push 800067001720.dkr.ecr.ap-northeast-1.amazonaws.com/$IMAGE_TAG
 
-    - name: Update AWS Lambda
+    - name: Update ECS Service
       run: |
-        aws lambda update-function-code \
-          --function-name Hello-${{ github.ref_name }} \
-          --image-uri 800067001720.dkr.ecr.ap-northeast-1.amazonaws.com/my-fastapi-app:${{ github.ref_name }} \
-          --region ap-northeast-1
+        aws ecs update-service \
+          --cluster my-fargate-cluster \
+          --service fastapi-staging-service \
+          --force-new-deployment
 
     env:
       AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
       AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
-
