@@ -11,36 +11,49 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
+    # リポジトリのコードをチェックアウト
     - name: Checkout code
       uses: actions/checkout@v2
 
-    # 環境変数の設定 (ブランチに基づく)
+    # 環境変数の設定 (mainとstagingでサービスを切り替え)
     - name: Set environment variables
       run: echo "ENVIRONMENT=${{ github.ref_name }}" >> $GITHUB_ENV
-
-    # デバッグ: 環境変数の確認
-    - name: Debug ENVIRONMENT
-      run: echo "Branch: $ENVIRONMENT"
 
     # Amazon ECR ログイン
     - name: Log in to Amazon ECR
       run: |
         aws ecr get-login-password --region ap-northeast-1 | docker login --username AWS --password-stdin 800067001720.dkr.ecr.ap-northeast-1.amazonaws.com
 
-    # Docker イメージのビルドとプッシュ
+    # Docker イメージをビルドしてプッシュ
     - name: Build and Push Docker image
       run: |
         IMAGE_TAG=800067001720.dkr.ecr.ap-northeast-1.amazonaws.com/my-fastapi-app:${{ github.sha }}
         docker build -t $IMAGE_TAG .
         docker push $IMAGE_TAG
 
-    # ECS サービスの更新 (固定で fastapi-staging-service を使用)
+    # ECS サービスを更新
     - name: Update ECS Service
       run: |
+        SERVICE_NAME=$([[ $ENVIRONMENT == 'main' ]] && echo "fastapi-production-service" || echo "fastapi-staging-service")
+        echo "Deploying to service: $SERVICE_NAME"
         aws ecs update-service \
           --cluster my-fargate-cluster \
-          --service fastapi-staging-service \
+          --service $SERVICE_NAME \
           --force-new-deployment \
+          --region ap-northeast-1
+
+    # ECS タスクの状態を確認
+    - name: Check ECS Task Status
+      run: |
+        SERVICE_NAME=$([[ $ENVIRONMENT == 'main' ]] && echo "fastapi-production-service" || echo "fastapi-staging-service")
+        TASK_ARN=$(aws ecs list-tasks --cluster my-fargate-cluster --service-name $SERVICE_NAME --desired-status RUNNING --region ap-northeast-1 --query 'taskArns[0]' --output text)
+        if [ "$TASK_ARN" == "None" ]; then
+          echo "No running tasks found for service: $SERVICE_NAME"
+          exit 1
+        fi
+        aws ecs describe-tasks \
+          --cluster my-fargate-cluster \
+          --tasks $TASK_ARN \
           --region ap-northeast-1
 
     env:
