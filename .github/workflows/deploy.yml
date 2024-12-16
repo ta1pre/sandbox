@@ -28,7 +28,7 @@ jobs:
     - name: Build and Push Docker image
       run: |
         IMAGE_TAG=800067001720.dkr.ecr.ap-northeast-1.amazonaws.com/my-fastapi-app:${{ github.sha }}
-        docker build -t $IMAGE_TAG .
+        docker build --no-cache -t $IMAGE_TAG .
         docker push $IMAGE_TAG
 
     # ECS サービスを更新
