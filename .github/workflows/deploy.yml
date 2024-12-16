@@ -4,6 +4,7 @@ on:
   push:
     branches:
       - staging
+      - main
 
 jobs:
   deploy:
@@ -14,7 +15,7 @@ jobs:
     - name: Checkout code
       uses: actions/checkout@v2
 
-    # 環境変数の設定 (ステージング環境固定)
+    # 環境変数の設定 (本番環境が無いため、ステージング環境を強制的に使用)
     - name: Set environment variables
       run: echo "SERVICE_NAME=fastapi-staging-service" >> $GITHUB_ENV
 
@@ -27,7 +28,7 @@ jobs:
     - name: Build and Push Docker image
       run: |
         IMAGE_TAG=800067001720.dkr.ecr.ap-northeast-1.amazonaws.com/my-fastapi-app:${{ github.sha }}
-        docker buildx build --platform linux/amd64 -t $IMAGE_TAG .
+        docker build --no-cache -t $IMAGE_TAG .
         docker push $IMAGE_TAG
 
     # ECS サービスを更新
