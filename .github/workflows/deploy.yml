@@ -3,7 +3,6 @@ name: Deploy to AWS Fargate
 on:
   push:
     branches:
-      - staging
       - main
 
 jobs:
@@ -15,14 +14,9 @@ jobs:
     - name: Checkout code
       uses: actions/checkout@v2
 
-    # 環境変数の設定
+    # 環境変数の設定 (固定で fastapi-staging-service)
     - name: Set environment variables
-      run: |
-        if [[ "${{ github.ref_name }}" == "main" ]]; then
-          echo "SERVICE_NAME=fastapi-staging-service" >> $GITHUB_ENV
-        else
-          echo "Invalid branch for deployment" && exit 1
-        fi
+      run: echo "SERVICE_NAME=fastapi-staging-service" >> $GITHUB_ENV
 
     # Amazon ECR ログイン
     - name: Log in to Amazon ECR
@@ -35,6 +29,40 @@ jobs:
         IMAGE_TAG=800067001720.dkr.ecr.ap-northeast-1.amazonaws.com/my-fastapi-app:${{ github.sha }}
         docker buildx build --platform linux/amd64 -t $IMAGE_TAG .
         docker push $IMAGE_TAG
+
+    # ECS タスク定義を新規リビジョンとして登録
+    - name: Register ECS Task Definition
+      run: |
+        aws ecs register-task-definition \
+          --family Fargate \
+          --container-definitions "[
+            {
+              \"name\": \"fastapi-container\",
+              \"image\": \"800067001720.dkr.ecr.ap-northeast-1.amazonaws.com/my-fastapi-app:${{ github.sha }}\",
+              \"essential\": true,
+              \"portMappings\": [
+                {
+                  \"containerPort\": 8000,
+                  \"hostPort\": 8000
+                }
+              ],
+              \"environment\": [
+                {
+                  \"name\": \"MESSAGE\",
+                  \"value\": \"こんちわ、これは環境変数\"
+                }
+              ],
+              \"logConfiguration\": {
+                \"logDriver\": \"awslogs\",
+                \"options\": {
+                  \"awslogs-group\": \"/ecs/fastapi-container\",
+                  \"awslogs-region\": \"ap-northeast-1\",
+                  \"awslogs-stream-prefix\": \"ecs\"
+                }
+              }
+            }
+          ]" \
+          --region ap-northeast-1
 
     # ECS サービスを更新
     - name: Update ECS Service
