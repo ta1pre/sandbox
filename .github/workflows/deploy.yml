@@ -15,9 +15,14 @@ jobs:
     - name: Checkout code
       uses: actions/checkout@v2
 
-    # 環境変数の設定 (本番環境が無いため、ステージング環境を強制的に使用)
+    # 環境変数の設定
     - name: Set environment variables
-      run: echo "SERVICE_NAME=fastapi-staging-service" >> $GITHUB_ENV
+      run: |
+        if [[ "${{ github.ref_name }}" == "main" ]]; then
+          echo "SERVICE_NAME=fastapi-staging-service" >> $GITHUB_ENV
+        else
+          echo "Invalid branch for deployment" && exit 1
+        fi
 
     # Amazon ECR ログイン
     - name: Log in to Amazon ECR
@@ -28,7 +33,7 @@ jobs:
     - name: Build and Push Docker image
       run: |
         IMAGE_TAG=800067001720.dkr.ecr.ap-northeast-1.amazonaws.com/my-fastapi-app:${{ github.sha }}
-        docker build --no-cache -t $IMAGE_TAG .
+        docker buildx build --platform linux/amd64 -t $IMAGE_TAG .
         docker push $IMAGE_TAG
 
     # ECS サービスを更新
