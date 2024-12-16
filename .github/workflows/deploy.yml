@@ -15,9 +15,9 @@ jobs:
     - name: Checkout code
       uses: actions/checkout@v2
 
-    # 環境変数の設定 (mainとstagingでサービスを切り替え)
+    # 環境変数の設定 (本番環境が無いため、ステージング環境を強制的に使用)
     - name: Set environment variables
-      run: echo "ENVIRONMENT=${{ github.ref_name }}" >> $GITHUB_ENV
+      run: echo "SERVICE_NAME=fastapi-staging-service" >> $GITHUB_ENV
 
     # Amazon ECR ログイン
     - name: Log in to Amazon ECR
@@ -34,7 +34,6 @@ jobs:
     # ECS サービスを更新
     - name: Update ECS Service
       run: |
-        SERVICE_NAME=$([[ $ENVIRONMENT == 'main' ]] && echo "fastapi-production-service" || echo "fastapi-staging-service")
         echo "Deploying to service: $SERVICE_NAME"
         aws ecs update-service \
           --cluster my-fargate-cluster \
@@ -45,7 +44,6 @@ jobs:
     # ECS タスクの状態を確認
     - name: Check ECS Task Status
       run: |
-        SERVICE_NAME=$([[ $ENVIRONMENT == 'main' ]] && echo "fastapi-production-service" || echo "fastapi-staging-service")
         TASK_ARN=$(aws ecs list-tasks --cluster my-fargate-cluster --service-name $SERVICE_NAME --desired-status RUNNING --region ap-northeast-1 --query 'taskArns[0]' --output text)
         if [ "$TASK_ARN" == "None" ]; then
           echo "No running tasks found for service: $SERVICE_NAME"
@@ -59,4 +57,3 @@ jobs:
     env:
       AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
       AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
-
