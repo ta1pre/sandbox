@@ -49,18 +49,29 @@ jobs:
     # ECS タスクの状態を確認
     - name: Check ECS Task Status
       run: |
-        TASK_ARN=$(aws ecs list-tasks --cluster my-fargate-cluster --service-name $SERVICE_NAME --desired-status RUNNING --region ap-northeast-1 --query 'taskArns[0]' --output text)
+        TASK_ARN=$(aws ecs list-tasks \
+          --cluster my-fargate-cluster \
+          --service-name $SERVICE_NAME \
+          --desired-status RUNNING \
+          --region ap-northeast-1 \
+          --query 'taskArns[0]' \
+          --output text)
+          
         if [ "$TASK_ARN" == "None" ]; then
           echo "No running tasks found for service: $SERVICE_NAME"
           exit 1
         fi
-        aws ecs describe-tasks \
+
+        # タスク詳細と使用イメージ確認
+        IMAGE=$(aws ecs describe-tasks \
           --cluster my-fargate-cluster \
           --tasks $TASK_ARN \
-          --region ap-northeast-1
-          --query 'tasks[0].containers[0].image'
+          --region ap-northeast-1 \
+          --query 'tasks[0].containers[0].image' \
+          --output text)
+          
+        echo "Running Image: $IMAGE"
 
     env:
       AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
       AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
-
