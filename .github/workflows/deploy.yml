@@ -1,77 +1,51 @@
-name: Deploy to AWS Fargate
+name: Deploy to ECS
 
 on:
   push:
     branches:
-      - staging
       - main
+
+env:
+  AWS_REGION: ${{ secrets.AWS_REGION }}
+  ECR_REPOSITORY: ${{ secrets.ECR_REPOSITORY }}
+  ECS_CLUSTER: ${{ secrets.ECS_CLUSTER }}
+  ECS_SERVICE: ${{ secrets.ECS_SERVICE }}
+  ECS_TASK_DEFINITION: ${{ secrets.ECS_TASK_DEFINITION }}
 
 jobs:
   deploy:
+    name: Build, Push to ECR, and Deploy to ECS
     runs-on: ubuntu-latest
 
     steps:
-    # リポジトリのコードをチェックアウト
-    - name: Checkout code
-      uses: actions/checkout@v2
+      # 1. リポジトリのチェックアウト
+      - name: Checkout code
+        uses: actions/checkout@v3
 
-    # 環境変数の設定
-    - name: Set environment variables
-      run: |
-        if [[ "${{ github.ref_name }}" == "main" ]]; then
-          echo "SERVICE_NAME=fastapi-staging-service" >> $GITHUB_ENV
-        else
-          echo "Invalid branch for deployment" && exit 1
-        fi
+      # 2. AWS CLIの設定
+      - name: Configure AWS CLI
+        uses: aws-actions/configure-aws-credentials@v2
+        with:
+          aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
+          aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+          aws-region: ${{ env.AWS_REGION }}
 
-    # Amazon ECR ログイン
-    - name: Log in to Amazon ECR
-      run: |
-        aws ecr get-login-password --region ap-northeast-1 | docker login --username AWS --password-stdin 800067001720.dkr.ecr.ap-northeast-1.amazonaws.com
+      # 3. Dockerイメージをビルド
+      - name: Build Docker image
+        run: |
+          docker build -t $ECR_REPOSITORY:latest .
 
-    # Docker イメージをビルドしてプッシュ
-    - name: Build and Push Docker image
-      run: |
-        IMAGE_TAG=800067001720.dkr.ecr.ap-northeast-1.amazonaws.com/my-fastapi-app:${{ github.sha }}
-        docker buildx build --platform linux/amd64 -t $IMAGE_TAG .
-        docker push $IMAGE_TAG
+      # 4. ECRにログイン
+      - name: Login to Amazon ECR
+        uses: aws-actions/amazon-ecr-login@v1
 
-    # ECS サービスを更新
-    - name: Update ECS Service
-      run: |
-        echo "Deploying to service: $SERVICE_NAME"
-        aws ecs update-service \
-          --cluster my-fargate-cluster \
-          --service $SERVICE_NAME \
-          --force-new-deployment \
-          --region ap-northeast-1
+      # 5. イメージをECRにプッシュ
+      - name: Push Docker image to Amazon ECR
+        run: |
+          docker tag $ECR_REPOSITORY:latest $AWS_ACCOUNT_ID.dkr.ecr.$AWS_REGION.amazonaws.com/$ECR_REPOSITORY:latest
+          docker push $AWS_ACCOUNT_ID.dkr.ecr.$AWS_REGION.amazonaws.com/$ECR_REPOSITORY:latest
 
-    # ECS タスクの状態を確認
-    - name: Check ECS Task Status
-      run: |
-        TASK_ARN=$(aws ecs list-tasks \
-          --cluster my-fargate-cluster \
-          --service-name $SERVICE_NAME \
-          --desired-status RUNNING \
-          --region ap-northeast-1 \
-          --query 'taskArns[0]' \
-          --output text)
-          
-        if [ "$TASK_ARN" == "None" ]; then
-          echo "No running tasks found for service: $SERVICE_NAME"
-          exit 1
-        fi
-
-        # タスク詳細と使用イメージ確認
-        IMAGE=$(aws ecs describe-tasks \
-          --cluster my-fargate-cluster \
-          --tasks $TASK_ARN \
-          --region ap-northeast-1 \
-          --query 'tasks[0].containers[0].image' \
-          --output text)
-          
-        echo "Running Image: $IMAGE"
-
-    env:
-      AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
-      AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+      # 6. ECSタスク定義の更新
+      - name: Update ECS service
+        run: |
+          aws ecs update-service --cluster $ECS_CLUSTER --service $ECS_SERVICE --force-new-deployment

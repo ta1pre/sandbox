@@ -7,10 +7,10 @@ app = FastAPI()
 # 環境変数を使ったエンドポイント
 @app.get("/")
 def read_root():
-    return {"message": "こんにちわ"}  # 環境変数の影響を受けない固定文字列
+    return {"message": "ギットハブからこんにちわぁ"}  # 環境変数の影響を受けない固定文字列
 
 # 新しいエンドポイント
 @app.get("/test")
 def test_endpoint():
-    return {"message": "テストエンドポイント"}
+    return {"message": "githubテストエンドポイント"}
 
