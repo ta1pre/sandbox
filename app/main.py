@@ -1,15 +1,28 @@
-# ファイル名: app/main.py
-
-from fastapi import FastAPI
-import json  # jsonモジュールをインポート
+from fastapi import FastAPI, Depends
+from sqlalchemy.orm import Session
+from app.database import SessionLocal, test_db_connection, User
 
 app = FastAPI()
 
-@app.get("/")
-def read_root():
-    return json.dumps({"message": "ギットハブからこんにちわぁ〜〜〜"}, ensure_ascii=False)  # Falseは大文字
+# データベースセッションを取得する依存関数
+def get_db():
+    db = SessionLocal()
+    try:
+        yield db
+    finally:
+        db.close()
 
-# 新しいエンドポイント
-@app.get("/test")
-def test_endpoint():
-    return json.dumps({"message": "ギットハブからこんにちわぁ〜〜〜"}, ensure_ascii=False)  # Falseは大文字
+# データベース接続テストエンドポイント
+@app.get("/test-db")
+def test_database():
+    if test_db_connection():
+        return {"message": "Database connection successful"}
+    else:
+        return {"message": "Database connection failed"}
+
+# usersテーブルのデータを取得するエンドポイント
+@app.get("/users")
+def get_users(db: Session = Depends(get_db)):
+    """usersテーブルから全データを取得する"""
+    users = db.query(User).all()
+    return {"users": users}
