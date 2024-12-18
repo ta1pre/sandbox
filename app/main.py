@@ -13,6 +13,10 @@ def get_db():
         db.close()
 
 # データベース接続テストエンドポイント
+@app.get("/")
+def home():
+    return {"message": "Welcome to FastAPI!"}
+
 @app.get("/test-db")
 def test_database():
     if test_db_connection():
