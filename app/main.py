@@ -1,16 +1,15 @@
 # ファイル名: app/main.py
 
 from fastapi import FastAPI
+import json  # jsonモジュールをインポート
 
 app = FastAPI()
 
-# 環境変数を使ったエンドポイント
 @app.get("/")
 def read_root():
-    return {"message": "ギットハブからこんにちわぁ"}  # 環境変数の影響を受けない固定文字列
+    return json.dumps({"message": "ギットハブからこんにちわぁ〜〜〜"}, ensure_ascii=False)  # Falseは大文字
 
 # 新しいエンドポイント
 @app.get("/test")
 def test_endpoint():
-    return {"message": "githubテストエンドポイント"}
-
+    return json.dumps({"message": "ギットハブからこんにちわぁ〜〜〜"}, ensure_ascii=False)  # Falseは大文字
