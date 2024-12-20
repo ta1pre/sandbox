@@ -17,8 +17,8 @@ def get_db():
 def home():
     return {"message": "githubからプッシュ16:46"}
 
-@app.get("/")
-def home():
+@app.get("/test")
+def test():
     return {"message": "テスト"}
 
 @app.get("/test-db")
