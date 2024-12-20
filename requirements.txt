@@ -1,4 +1,5 @@
-fastapi==0.115.6
-uvicorn[standard]  # 必須: FastAPIを実行するためのASGIサーバー
+fastapi==0.115.6  # FastAPI本体
+uvicorn[standard]  # FastAPIを実行するためのASGIサーバー
 python-dotenv==1.0.1  # 環境変数の管理
-SQLAlchemy==2.0.36  # データベース管理
+SQLAlchemy==2.0.36  # データベースORM
+pymysql==1.0.3  # MySQLデータベースドライバ

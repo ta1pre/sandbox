@@ -15,7 +15,7 @@ def get_db():
 # データベース接続テストエンドポイント
 @app.get("/")
 def home():
-    return {"message": "Welcome to FastAPI!"}
+    return {"message": "githubからプッシュ"}
 
 @app.get("/test-db")
 def test_database():
