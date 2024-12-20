@@ -36,7 +36,7 @@ jobs:
       # 4. Dockerイメージをビルド
       - name: Build Docker image
         run: |
-          docker build --platform linux/amd64 -t $ECR_REPOSITORY:latest .
+          docker build --no-cache --platform linux/amd64 -t $ECR_REPOSITORY:latest .
 
       # 5. イメージをECRにプッシュ
       - name: Push Docker image to Amazon ECR
