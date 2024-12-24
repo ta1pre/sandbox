@@ -15,7 +15,7 @@ def get_db():
 # データベース接続テストエンドポイント
 @app.get("/")
 def home():
-    return {"message": "githubからプッシュ16:46"}
+    return {"message": "githubからクリスマス"}
 
 @app.get("/test")
 def test():
