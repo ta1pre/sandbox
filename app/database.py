@@ -21,7 +21,7 @@ SessionLocal = sessionmaker(autocommit=False, autoflush=False, bind=engine)
 # ベースモデルの定義
 Base = declarative_base()
 
-# usersテーブルのモデル
+# usersテーブルのモデaル
 class User(Base):
     __tablename__ = "users"
     id = Column(Integer, primary_key=True, index=True)
