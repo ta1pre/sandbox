@@ -9,6 +9,6 @@ async def root():
     return {"message": "1229！"}
 
 @app.get("/test")
-async def root():
+async def test():
     return {"message": "てすとぺーじ"}
 
