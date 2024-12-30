@@ -46,40 +46,40 @@ jobs:
 
       # 6. 新しいタスク定義を登録
       - name: Register new ECS Task Definition
-  run: |
-    aws ecs register-task-definition \
-      --family Fargate \
-      --container-definitions '[
-        {
-          "name": "fastapi-container",
-          "image": "'"${{ secrets.AWS_ACCOUNT_ID }}.dkr.ecr.${{ env.AWS_REGION }}.amazonaws.com/${{ env.ECR_REPOSITORY }}:latest"'",
-          "cpu": 256,
-          "memory": 512,
-          "portMappings": [
-            {
-              "containerPort": 8000,
-              "hostPort": 8000,
-              "protocol": "tcp"
-            }
-          ],
-          "logConfiguration": {
-            "logDriver": "awslogs",
-            "options": {
-              "awslogs-group": "/ecs/fastapi-container",
-              "awslogs-region": "'"${{ env.AWS_REGION }}"'",
-              "awslogs-stream-prefix": "ecs"
-            }
-          }
-        }
-      ]' \
-      --network-mode awsvpc \
-      --requires-compatibilities FARGATE \
-      --execution-role-arn "arn:aws:iam::${{ secrets.AWS_ACCOUNT_ID }}:role/ecsTaskExecutionRole" \
-      --cpu "256" \
-      --memory "512"
-
+        run: |
+          aws ecs register-task-definition \
+            --family Fargate \
+            --container-definitions '[
+              {
+                "name": "fastapi-container",
+                "image": "'"${{ secrets.AWS_ACCOUNT_ID }}.dkr.ecr.${{ env.AWS_REGION }}.amazonaws.com/${{ env.ECR_REPOSITORY }}:latest"'",
+                "cpu": 256,
+                "memory": 512,
+                "portMappings": [
+                  {
+                    "containerPort": 8000,
+                    "hostPort": 8000,
+                    "protocol": "tcp"
+                  }
+                ],
+                "logConfiguration": {
+                  "logDriver": "awslogs",
+                  "options": {
+                    "awslogs-group": "/ecs/fastapi-container",
+                    "awslogs-region": "'"${{ env.AWS_REGION }}"'",
+                    "awslogs-stream-prefix": "ecs"
+                  }
+                }
+              }
+            ]' \
+            --network-mode awsvpc \
+            --requires-compatibilities FARGATE \
+            --execution-role-arn "arn:aws:iam::${{ secrets.AWS_ACCOUNT_ID }}:role/ecsTaskExecutionRole" \
+            --cpu "256" \
+            --memory "512"
 
       # 7. ECSサービスの更新
       - name: Deploy to ECS
         run: |
           aws ecs update-service --cluster $ECS_CLUSTER --service $ECS_SERVICE --force-new-deployment
+          
