@@ -17,7 +17,16 @@
             ],
             "essential": true,
             "command": ["uvicorn", "main:app", "--host", "0.0.0.0", "--port", "8000"],
-            "environment": [],
+            "environment": [
+                {
+          "name": "DATABASE_URL",
+          "value": "mysql+pymysql://user:password@aws-rds-instance/dbname"
+        },
+        {
+          "name": "TEST_KEY",
+          "value": "テスト環境変数"
+        }
+            ],
             "logConfiguration": {
                 "logDriver": "awslogs",
                 "options": {
