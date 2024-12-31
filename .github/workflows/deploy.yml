@@ -49,8 +49,9 @@ jobs:
 
       ## 6. 新しいタスク定義を登録
       - name: Register new ECS Task Definition
+        id: register-task
         run: |
-          aws ecs register-task-definition \
+          TASK_DEFINITION_ARN=$(aws ecs register-task-definition \
             --family Fargate \
             --container-definitions '[
               {
@@ -63,6 +64,16 @@ jobs:
                     "containerPort": 8000,
                     "hostPort": 8000,
                     "protocol": "tcp"
+                  }
+                ],
+                "environment": [
+                  {
+                    "name": "DATABASE_URL",
+                    "value": "mysql+pymysql://user:password@aws-rds-instance/dbname"
+                  },
+                  {
+                    "name": "TEST_KEY",
+                    "value": "テスト環境変数"
                   }
                 ],
                 "logConfiguration": {
@@ -79,7 +90,11 @@ jobs:
             --requires-compatibilities FARGATE \
             --execution-role-arn "arn:aws:iam::${{ secrets.AWS_ACCOUNT_ID }}:role/ecsTaskExecutionRole" \
             --cpu "256" \
-            --memory "512"
+            --memory "512" \
+            --query "taskDefinition.taskDefinitionArn" \
+            --output text)
+          
+          echo "TASK_DEFINITION_ARN=${TASK_DEFINITION_ARN}" >> $GITHUB_ENV
 
       ## 7. ECSサービスの更新
       - name: Deploy to ECS
@@ -87,10 +102,10 @@ jobs:
           aws ecs update-service \
             --cluster $ECS_CLUSTER \
             --service $ECS_SERVICE \
-            --task-definition Fargate \
+            --task-definition ${{ env.TASK_DEFINITION_ARN }} \
             --force-new-deployment
 
-      ## 8. デプロイ後の確認
+      ## 8. 確認ステップ
       - name: Verify Deployment
         run: |
           echo "Checking ECS Service Task Definition..."
@@ -104,4 +119,13 @@ jobs:
             --cluster $ECS_CLUSTER \
             --desired-status RUNNING
 
-          echo "Deployment verification complete."
+          echo "Checking Task Environment Variables..."
+          TASK_ARN=$(aws ecs list-tasks \
+            --cluster $ECS_CLUSTER \
+            --desired-status RUNNING \
+            --query "taskArns[0]" \
+            --output text)
+          aws ecs describe-tasks \
+            --cluster $ECS_CLUSTER \
+            --tasks $TASK_ARN \
+            --query "tasks[0].containers[0].environment"
