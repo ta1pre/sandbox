@@ -30,6 +30,7 @@ def create_refresh_token(user_id: str):
         "exp": int(expire.timestamp()),
         "iat": int(datetime.now(timezone.utc).timestamp())
     }
+    
     return jwt.encode(payload, REFRESH_SECRET_KEY, algorithm=ALGORITHM)
 
 def verify_access_token(token: str):

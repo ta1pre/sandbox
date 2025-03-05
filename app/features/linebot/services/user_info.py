@@ -12,7 +12,7 @@ def fetch_user_info_by_line_id(db: Session, line_id: str) -> dict:
         return {
             "id": user.id,
             "nickname": user.nick_name or "ゲスト",
-            "type": user.type or "common",
+            "type": user.user_type or "common",
             "last_login": user.last_login or "未ログイン",
             "sex": user.sex or "未設定",
             "birth": user.birth or "未設定"

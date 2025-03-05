@@ -122,7 +122,11 @@ def search_faq(user_message: str, user_info: dict, reply_token: str) -> str:
                 f"---\n"
                 f"ユーザーの最新の質問: {user_message}\n"
                 f"過去の会話を踏まえて、自然な返答をしてください。"
+                f"接客サービスの内容に関係なさそうな場合はその件には答えなくていいです。"
+                f"相手の質問が曖昧な場合は聞き返して下さい。"
+                f"内容について曖昧な場合は答えないでサポートへ問い合わせを促して下さい。"
                 f"雑な回答は避け、サポートへの問い合わせを促して下さい。"
+                f"基本的に相手は弊社のキャストです。よって、サービスについての質問しかしてこない前提です。"
             )
 
             reply = get_openai_reply(user_message, system_prompt)

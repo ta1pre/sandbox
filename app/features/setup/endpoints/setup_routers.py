@@ -1,5 +1,5 @@
 from fastapi import APIRouter, Depends
-from app.core.security import get_current_user  # ✅ 修正: `get_current_user` を正しくインポート
+from app.core.security import get_current_user  
 
 # ✅ 認証が自動で適用されるルーター
 setup_router = APIRouter(
@@ -11,6 +11,10 @@ setup_router = APIRouter(
 from .setup_status import router as status_router
 setup_router.include_router(status_router, prefix="/status", tags=["Setup - Status"])
 
-# 性別
-from .sex_selection import router as sex_router
-setup_router.include_router(sex_router, prefix="/sex", tags=["Setup - Sex"])
+#登録
+from .setup_register import router as register_router
+setup_router.include_router(register_router, prefix="/register", tags=["Setup - Register"])
+
+
+
+

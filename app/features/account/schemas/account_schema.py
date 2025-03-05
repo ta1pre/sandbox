@@ -15,7 +15,7 @@ class UserBase(BaseModel):
     picture_url: Optional[str] = Field(None, example="https://example.com/picture.jpg")
     sex: Optional[str] = Field(None, example="Male")
     birth: Optional[str] = Field(None, example="1990-01-01")
-    type: Optional[str] = Field(None, example="User")
+    user_type: Optional[str] = Field(None, example="User")
     affi_type: Optional[int] = Field(None, example=1)
     last_login: Optional[str] = Field(None, example="2024-01-02 14:00:00")
 

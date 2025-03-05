@@ -20,7 +20,7 @@ class User(Base):
     password_hash = Column(String(255), nullable=True)
     sex = Column(String(255), nullable=True)
     birth = Column(String(255), nullable=True)
-    type = Column(String(255), nullable=True)
+    user_type = Column(String(255), nullable=True)
     affi_type = Column(Integer, nullable=True)
     last_login = Column(String(255), nullable=True)
     created_at = Column(DateTime, server_default=func.now())

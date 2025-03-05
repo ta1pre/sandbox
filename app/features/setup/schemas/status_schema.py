@@ -1,9 +1,7 @@
-from pydantic import BaseModel, Field
+from pydantic import BaseModel
+from typing import Dict, Any
 
-
-class SetupStatusRequest(BaseModel):
-    setup_status: str = Field(..., description="進捗状況")
-
-class SetupStatusResponse(BaseModel):
+class ProfileUpdateRequest(BaseModel):
     user_id: int
-    setup_status: str
+    user_type: str
+    profile_data: Dict[str, Any]

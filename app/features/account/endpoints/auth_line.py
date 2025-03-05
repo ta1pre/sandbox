@@ -9,7 +9,8 @@ from app.core.config import (
     FRONTEND_URL, 
     LINE_LOGIN_CHANNEL_ID, 
     LINE_LOGIN_CHANNEL_SECRET, 
-    REDIRECT_URI
+    REDIRECT_URI,
+    REFRESH_TOKEN_EXPIRE_DAYS
 )
 import requests
 from datetime import datetime
@@ -96,7 +97,7 @@ async def line_callback(request: Request, db: Session = Depends(get_db)):
     # 📌 JWTトークン生成
     jwt_token = create_access_token(
         user_id=user.id,
-        user_type=user.type,
+        user_type=user.user_type,
         affi_type=user.affi_type
     )
 
@@ -104,16 +105,18 @@ async def line_callback(request: Request, db: Session = Depends(get_db)):
     refresh_token = create_refresh_token(user.id)
 
     # ✅ `refresh_token` を `HttpOnly Cookie` に保存
-    response = RedirectResponse(url=f"{FRONTEND_URL}/auth/callback?token={jwt_token}")
-    response.set_cookie(
-        key="refresh_token",
-        value=refresh_token,
-        httponly=True,  # JavaScript からアクセスできない
-        secure=True,  # 開発環境で http を使う場合は False に設定
-        samesite="None",  # クロスサイトリクエスト制限
-        max_age=30 * 24 * 60 * 60,  # 30日間の有効期限
-        path="/"  # 全てのパスで有効にする
-    )
+    #もともとはこっちresponse = RedirectResponse(url=f"{FRONTEND_URL}/auth/callback?token={jwt_token}")
+    response = RedirectResponse(url=f"{FRONTEND_URL}/auth/callback?token={jwt_token}&refresh_token={refresh_token}")
+    
+    #response.set_cookie(
+    #    key="refresh_token",
+    #    value=refresh_token,
+    #    httponly=True,  # JavaScript からアクセスできない
+    #    secure=True,  # 開発環境で http を使う場合は False に設定
+    #    samesite="None",  # クロスサイトリクエスト制限
+    #    max_age=90 * 24 * 60 * 60,
+    #    path="/"  # 全てのパスで有効にする
+    #)
 
 
     return response
