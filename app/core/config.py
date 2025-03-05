@@ -10,6 +10,9 @@ else:
 
 load_dotenv(dotenv_path, override=True)  # ← `override=True` を必ず設定
 
+#データベース
+DATABASE_URL = os.getenv("DATABASE_URL")
+
 # `REDIRECT_URI` の値を出力
 REDIRECT_URI = os.getenv("REDIRECT_URI")
 print(f"DEBUG: REDIRECT_URI (os.getenv) = {REDIRECT_URI}")
