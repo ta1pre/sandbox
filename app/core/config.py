@@ -1,16 +1,21 @@
 import os
 from dotenv import load_dotenv
 
-# 環境変数を読み込む
-# ✅ `.env` のパスを明示的に指定
-dotenv_path = os.path.abspath(os.path.join(os.path.dirname(__file__), "../.env"))  # 適切なパスを指定
-load_dotenv(dotenv_path, override=True)
+# `.env` を明示的に指定してロード
+dotenv_path = os.path.abspath(os.path.join(os.path.dirname(__file__), "../.env"))
+if os.path.exists(dotenv_path):
+    print(f"✅ `.env` をロード: {dotenv_path}")
+else:
+    print("🚨 `.env` が見つかりません！")
 
-print("=== ENVIRONMENT VARIABLES ===")
-for key, value in os.environ.items():
-    if "REDIRECT" in key.upper():  # `REDIRECT_URI` に関係する変数だけ表示
-        print(f"{key} = {value}")
-print("=== END ENV ===")
+load_dotenv(dotenv_path, override=True)  # ← `override=True` を必ず設定
+
+# `REDIRECT_URI` の値を出力
+REDIRECT_URI = os.getenv("REDIRECT_URI")
+print(f"DEBUG: REDIRECT_URI (os.getenv) = {REDIRECT_URI}")
+
+# `os.environ.get` を使っても確認
+print(f"DEBUG: REDIRECT_URI (os.environ) = {os.environ.get('REDIRECT_URI')}")
 
 # LINE API関連
 LINE_LOGIN_CHANNEL_ID = os.getenv("LINE_LOGIN_CHANNEL_ID")
@@ -41,4 +46,5 @@ OPENAI_API_KEY = os.getenv("OPENAI_API_KEY")
 # microCMS
 MICROCMS_API_URL= os.getenv("MICROCMS_API_URL")
 MICROCMS_API_KEY= os.getenv("MICROCMS_API_KEY")
+
 

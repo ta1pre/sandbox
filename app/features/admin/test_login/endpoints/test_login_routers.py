@@ -8,4 +8,4 @@ admin_router = APIRouter(
 )
 
 from app.features.admin.test_login.endpoints.test_login import router as test_login_router
-admin_router.include_router(test_login_router, prefix="/test-login", tags=["Admin - test-loginルーター"])
+admin_router.include_router(test_login_router, prefix="", tags=["Admin - test-loginルーター"])

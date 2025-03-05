@@ -34,7 +34,7 @@ def fetch_and_embed_faq():
     }
 
     embedded_faqs = []
-    limit = 100  # 1回で取得する最大件数
+    limit = 1000  # 1回で取得する最大件数
     offset = 0   # 取得開始位置
 
     while True:

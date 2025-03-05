@@ -1,4 +1,4 @@
-from sqlalchemy import Column, Integer, String, Enum, DateTime, ForeignKey
+from sqlalchemy import Column, Integer, String, Enum, DateTime, ForeignKey, Float
 from sqlalchemy.sql import func
 from app.db.session import Base
 
@@ -20,10 +20,13 @@ class CastCommonProf(Base):
     hobby = Column(String(255), nullable=True)
     profile_image_url = Column(String(255), nullable=True)
     reservation_fee = Column(Integer, nullable=True)
+    popularity = Column(Integer, default=0, nullable=False) 
+    rating = Column(Float, default=0, nullable=False) 
     self_introduction = Column(String(255), nullable=True)
     job = Column(String(255), nullable=True)
     dispatch_prefecture = Column(String(255), nullable=True)
     support_area = Column(String(255), nullable=True)
     is_active = Column(Integer, default=1, nullable=True)
+    available_at = Column(DateTime, nullable=True)
     created_at = Column(DateTime, server_default=func.now(), nullable=True)
     updated_at = Column(DateTime, server_default=func.now(), onupdate=func.now(), nullable=True)

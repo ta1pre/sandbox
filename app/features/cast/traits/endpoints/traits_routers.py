@@ -1,6 +1,6 @@
 from fastapi import APIRouter, Depends
 from app.core.security import get_current_user
-from .traits import router as traits_api_router  # ← 名前を変更して区別
+from .traits import router as traits_api_router  
 
 # ✅ 認証を一括適用するルーター
 traits_router = APIRouter(

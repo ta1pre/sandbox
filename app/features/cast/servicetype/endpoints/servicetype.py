@@ -5,8 +5,8 @@ from typing import List, Dict
 from app.db.session import get_db
 from app.core.security import get_current_user
 
-from app.features.servicetype.repositories.servicetype_repository import ServiceTypeRepository
-from app.features.servicetype.schemas.servicetype_schema import ServiceTypeResponse, SelectedServiceTypeRequest, ServiceTypeRegisterRequest
+from app.features.cast.servicetype.repositories.servicetype_repository import ServiceTypeRepository
+from app.features.cast.servicetype.schemas.servicetype_schema import ServiceTypeResponse, SelectedServiceTypeRequest, ServiceTypeRegisterRequest
 
 
 

@@ -3,8 +3,8 @@ from fastapi import APIRouter, Depends
 from sqlalchemy.orm import Session
 from typing import List, Dict
 from app.db.session import get_db
-from app.features.traits.repositories.traits_repository import TraitsRepository
-from app.features.traits.schemas.traits_schema import TraitResponse, SelectedTraitsRequest, TraitRegisterRequest
+from app.features.cast.traits.repositories.traits_repository import TraitsRepository
+from app.features.cast.traits.schemas.traits_schema import TraitResponse, SelectedTraitsRequest, TraitRegisterRequest
 from app.core.security import get_current_user
 
 logger = logging.getLogger(__name__)
@@ -70,3 +70,4 @@ def say_hello():
     ✅ テスト用エンドポイント: 「こんにちわっと」を返す
     """
     return {"message": "こんにちわわわ"}
+
