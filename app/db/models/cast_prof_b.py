@@ -9,5 +9,5 @@ class CastProfB(Base):
     id = Column(Integer, primary_key=True, index=True, autoincrement=True)
     cast_id = Column(Integer, ForeignKey("cast_common_prof.cast_id", ondelete="CASCADE"), nullable=False)
     free_area = Column(String(500))  # ✅ 自己紹介・PR欄
-    created_at = Column(DateTime, server_default=func.now())
-    updated_at = Column(DateTime, server_default=func.now(), onupdate=func.now())
+    created_at = Column(DateTime(timezone=True), server_default=func.now())
+    updated_at = Column(DateTime(timezone=True), server_default=func.now(), onupdate=func.now())

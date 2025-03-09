@@ -1,5 +1,6 @@
-from sqlalchemy import Column, Integer, String, DateTime, Boolean
-from sqlalchemy.sql import func, text
+from sqlalchemy import Column, Integer, String, DateTime, Boolean, ForeignKey
+from sqlalchemy.orm import relationship
+from sqlalchemy.sql import func
 from app.db.session import Base
 
 class User(Base):
@@ -8,6 +9,7 @@ class User(Base):
     id = Column(Integer, primary_key=True, autoincrement=True, index=True)
     nick_name = Column(String(255), nullable=True)
     prefectures = Column(String(255), nullable=True)
+    station = Column(Integer, ForeignKey("stations.id"), nullable=True)  # 🔄 最寄り駅を `stations.id` に変更
     line_id = Column(String(255), unique=True, nullable=False, index=True)
     invitation_id = Column(String(255), unique=True, nullable=True, index=True)
     tracking_id = Column(String(255), nullable=True)
@@ -24,8 +26,11 @@ class User(Base):
     affi_type = Column(Integer, nullable=True)
     last_login = Column(String(255), nullable=True)
     created_at = Column(DateTime, server_default=func.now())
-    updated_at = Column(DateTime,server_default=func.now(),onupdate=text("CONVERT_TZ(NOW(), 'UTC', 'Asia/Tokyo')") )
+    updated_at = Column(DateTime, server_default=func.now(), onupdate=func.now())
     setup_status = Column(String(50), nullable=True, default=None)
 
+    # ✅ `stations` テーブルとの関係を定義
+    nearest_station = relationship("Station", backref="users")
+
     def __repr__(self):
-        return f"<User(id={self.id}, line_id={self.line_id}, email={self.email}, setup_status={self.setup_status})>"
+        return f"<User(id={self.id}, line_id={self.line_id}, email={self.email}, station={self.station})>"
