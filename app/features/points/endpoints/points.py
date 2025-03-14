@@ -29,3 +29,23 @@ def apply_point_rule_api(
     if not result:
         raise HTTPException(status_code=400, detail="ルール適用に失敗しました")
     return result
+
+#ポイント購入
+from app.features.points.services.purchase_service import process_point_purchase
+from app.features.points.schemas.purchase_schema import PurchasePointRequest, PurchasePointResponse
+
+@router.post("/purchase", response_model=PurchasePointResponse)
+def purchase_point(request: PurchasePointRequest, db: Session = Depends(get_db)):
+    """
+    ✅ ユーザーがポイントを購入するAPI
+    - `process_point_purchase()` で履歴追加 & 残高更新
+    """
+    user_id = request.user_id
+    amount = request.amount
+
+    try:
+        new_balance = process_point_purchase(db, user_id, amount)
+    except ValueError as e:
+        raise HTTPException(status_code=400, detail=str(e))
+
+    return {"message": "✅ ポイント購入成功", "new_balance": new_balance.total_point_balance}

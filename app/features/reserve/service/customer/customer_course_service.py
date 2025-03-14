@@ -10,7 +10,8 @@ def get_available_courses_by_cast_id(cast_id: int, db: Session):
         CustomerCourseResponse(
             course_name=c.course_name,
             duration=c.duration_minutes,  # ✅ `duration_minutes` に修正
-            cost=c.cost_points  # ✅ `cost_points` に修正
+            cost=c.cost_points,  # ✅ `cost_points` に修正
+            course_type=c.course_type  # ✅ `course_type` を追加
         )
         for c in courses
     ]

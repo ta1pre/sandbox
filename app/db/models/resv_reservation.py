@@ -28,6 +28,7 @@ class ResvReservation(Base):
     course_points = Column(Integer, nullable=False)
     option_points = Column(Integer, nullable=False, default=0)
     reservation_fee = Column(Integer, nullable=False, default=0)
+    traffic_fee = Column(Integer, nullable=False, default=0)
     total_points = Column(Integer, nullable=False)
     cast_reward_points = Column(Integer, nullable=False)
 
@@ -49,3 +50,6 @@ class ResvReservation(Base):
 
     # ✅ 予約に紐づくチャットメッセージを取得可能にする
     chat_messages = relationship("ResvChat", back_populates="reservation", cascade="all, delete-orphan")
+    
+    # 予約に紐づくオプション情報を取得可能にする
+    reservation_options = relationship("ResvReservationOption", back_populates="reservation", cascade="all, delete-orphan")

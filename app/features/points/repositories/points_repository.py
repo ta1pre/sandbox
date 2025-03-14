@@ -5,6 +5,7 @@ from sqlalchemy.orm import joinedload
 from app.db.models.point import PointBalance, PointTransaction, PointRule
 from datetime import datetime, timedelta
 from typing import List, Tuple
+from datetime import timezone
 
 def get_point_balance(db: Session, user_id: int):
     return db.query(PointBalance).filter_by(user_id=user_id).first()
@@ -13,7 +14,7 @@ def get_transaction_history(db: Session, user_id: int, limit: int, offset: int) 
     """
     ✅ 指定ユーザーの過去3ヶ月以内のポイント履歴を取得する（ルール説明を含める）
     """
-    three_months_ago = datetime.utcnow() - timedelta(days=90)
+    three_months_ago = datetime.now(timezone.utc) - timedelta(days=90)
 
     # ✅ `rule_description` を `JOIN` して取得
     history_query = db.query(PointTransaction).filter(
