@@ -57,3 +57,8 @@ master_router.include_router(area_router, prefix="/customer/area", tags=["Custom
 # ✅ RESERVE - 予約
 from app.features.reserve.endpoints.reserve_routers import reserve_router
 master_router.include_router(reserve_router, prefix="/reserve", tags=["Reserve"])
+
+
+# 駅の距離を計算！ディレクトリ「_駅の距離」　✅ INSERT DISTANCE ルーター（新規）
+# from app.features.insertDistances.insert_distance_router import insert_distance_router
+# master_router.include_router(insert_distance_router, prefix="/insert-distance", tags=["Insert Distance"])

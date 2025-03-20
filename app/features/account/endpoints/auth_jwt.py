@@ -191,7 +191,7 @@ async def extend_refresh_token(request: Request, response: Response, db: Session
 
             return {"refresh_token": new_refresh_token}
 
-        print("✅ 【extend_refresh_token】 `refresh_token` はまだ有効 - 更新不要")
+        print("✅ 【extend_refresh_token】 refresh_tokenはまだ有効 - 更新不要")
         return {"message": "refresh_token is still valid"}
 
     except Exception as e:

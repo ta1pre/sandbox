@@ -1,11 +1,10 @@
-# resv_reservation.py
-from sqlalchemy import Column, Integer, String, DateTime, Boolean, ForeignKey, Enum, DECIMAL
+# 📂 app/db/models/resv_reservation.py
+
+from sqlalchemy import Column, Integer, String, DateTime, Boolean, ForeignKey, DECIMAL
 from sqlalchemy.sql import func
 from app.db.session import Base
 from sqlalchemy.orm import relationship
 
-
-# Python標準Enumを利用してもOKですが、文字列Enumでも可
 STATUS_CHOICES = (
     "requested",
     "adjusted",
@@ -43,6 +42,10 @@ class ResvReservation(Base):
     status = Column(String(50), nullable=False, default="requested")
 
     cancel_reason = Column(String(255), nullable=True, default=None)
+
+    # ✅ キャスト専用メモ・施術内容のメモ欄（自由入力）
+    reservation_note = Column(String(1000), nullable=True, default=None)
+
     is_reminder_sent = Column(Boolean, nullable=False, default=False)
 
     created_at = Column(DateTime(timezone=True), server_default=func.now())
@@ -51,5 +54,5 @@ class ResvReservation(Base):
     # ✅ 予約に紐づくチャットメッセージを取得可能にする
     chat_messages = relationship("ResvChat", back_populates="reservation", cascade="all, delete-orphan")
     
-    # 予約に紐づくオプション情報を取得可能にする
+    # ✅ 予約に紐づくオプション情報を取得可能にする
     reservation_options = relationship("ResvReservationOption", back_populates="reservation", cascade="all, delete-orphan")

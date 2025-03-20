@@ -37,8 +37,11 @@ def update_profile(request: ProfileUpdateRequest, db: Session = Depends(get_db))
         # ✅ CastCommonProf を削除
         delete_cast_profile(request.user_id, db)
 
-        # ✅ ユーザーのメディアファイル（S3 + DB）を削除
+        # ✅ キャストのメディアファイル（S3 + DB）を削除
         delete_user_media_files(request.user_id, db)
+        
+        # ✅ ステータスをcompletedに。
+        update_user_setup_status(request.user_id, db)
 
         return {
             "message": "プロフィールが更新されました",

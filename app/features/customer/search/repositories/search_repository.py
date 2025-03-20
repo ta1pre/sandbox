@@ -43,6 +43,7 @@ def get_casts(limit: int, offset: int, sort: str, filters: dict, db: Session):
             (MediaAlias.target_type == "profile_common") &
             (MediaAlias.order_index == 0)
         )
+        .where(CastCommonProf.is_active == 1)
     )
 
     # ✅ `age` フィルターを適用

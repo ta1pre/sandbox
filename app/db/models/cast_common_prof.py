@@ -32,7 +32,7 @@ class CastCommonProf(Base):
     job = Column(String(255), nullable=True)
     dispatch_prefecture = Column(String(255), nullable=True)
     support_area = Column(String(255), nullable=True)
-    is_active = Column(Integer, default=1, nullable=True)
+    is_active = Column(Integer, default=0, nullable=True)
     available_at = Column(DateTime(timezone=True), nullable=True)
     created_at = Column(DateTime(timezone=True), server_default=func.now(), nullable=True)
     updated_at = Column(DateTime(timezone=True), server_default=func.now(), onupdate=func.now(), nullable=True)

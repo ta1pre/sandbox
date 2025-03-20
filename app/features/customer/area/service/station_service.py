@@ -64,6 +64,7 @@ def register_station_for_user(db: Session, user_id: int, station_id: int):
         return {"error": "Station not found"}
 
     user.station = station.id
+    user.prefectures = station.pref_cd
     db.commit()
 
     return {"message": f"Nearest station '{station.name}' registered successfully"}
