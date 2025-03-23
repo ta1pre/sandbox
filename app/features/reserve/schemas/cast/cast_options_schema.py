@@ -28,6 +28,7 @@ class SelectedOption(BaseModel):
     pydanticで複雑になるので、簡易的に2フィールドで吸収
     """
     option_id: Optional[int] = None
+    station_name: Optional[str] = None  # 駅IDの場合は駅名も返す
     custom_option_name: Optional[str] = None
     custom_option_price: Optional[int] = None
 

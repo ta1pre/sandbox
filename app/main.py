@@ -2,6 +2,8 @@ from fastapi import FastAPI
 from app.api.v1.routers.master_router import master_router  # 直接指定
 from fastapi.middleware.cors import CORSMiddleware
 import logging
+from app.core.config import FRONTEND_URL  # 追加
+
 
 logging.basicConfig(
     level=logging.INFO,  # ✅ INFO レベルのログを出力
@@ -24,8 +26,8 @@ def root():
     return {"msg": "Hello from main!"}
 
 origins = [
-    "https://8c0b37dc5a6a.ngrok.app",  # フロントエンドのドメインを指定
-    "http://localhost:3000",  # ローカル開発用
+    FRONTEND_URL,
+    "http://localhost:3000"  # 必要ならローカルも追加
 ]
 
 app.add_middleware(

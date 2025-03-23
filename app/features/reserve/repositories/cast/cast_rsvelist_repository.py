@@ -1,7 +1,7 @@
 # 📂 app/features/reserve/repositories/cast/cast_rsvelist_repository.py
 
 from sqlalchemy.orm import Session
-from sqlalchemy import select, func
+from sqlalchemy import select, func, cast, String, Integer
 from app.db.models.resv_reservation import ResvReservation
 from app.db.models.user import User
 from app.db.models.point_details import PointDetailsCourse
@@ -25,21 +25,23 @@ def get_cast_reservations(db: Session, cast_id: int, limit: int, offset: int):
             ResvReservation.id.label("reservation_id"),
             ResvReservation.user_id,
             User.nick_name.label("user_name"),
-            ResvStatusDetail.cast_label.label("status"), 
+            ResvStatusDetail.cast_label.label("status"),
             ResvStatusDetail.status_key,
+            ResvStatusDetail.description, # 追加: ステータスの説明
             ResvReservation.start_time,
             PointDetailsCourse.course_name,
             PointDetailsCourse.cost_points.label("course_price"),
             ResvReservation.traffic_fee,
             ResvStatusDetail.color_code,
-            Station.name.label("location"),
+            ResvReservation.location,
+            Station.name.label("station_name"),
             latest_message_subquery.c.last_message_time,
             latest_message_subquery.c.last_message_preview
         )
         .join(User, ResvReservation.user_id == User.id)
         .join(PointDetailsCourse, ResvReservation.course_id == PointDetailsCourse.id)
         .join(ResvStatusDetail, ResvReservation.status == ResvStatusDetail.status_key)
-        .join(Station, ResvReservation.location == Station.id)
+        .outerjoin(Station, cast(ResvReservation.location, Integer) == Station.id)
         .outerjoin(latest_message_subquery, ResvReservation.id == latest_message_subquery.c.reservation_id)
         .filter(ResvReservation.cast_id == cast_id)
         .order_by(ResvReservation.start_time.desc())

@@ -14,9 +14,12 @@ def format_cast_reservation_data(reservation):
         user_name=reservation.user_name,
         status=reservation.status,
         status_key=reservation.status_key,
+        cast_label=reservation.status,       # Use status (cast_label) from ResvStatusDetail
+        description=reservation.description, # Add description from ResvStatusDetail
         start_time=reservation.start_time,
         course_name=reservation.course_name,
         location=reservation.location,
+        station_name=reservation.station_name,
         course_price=reservation.course_price,
         traffic_fee=reservation.traffic_fee,
         color_code=reservation.color_code,

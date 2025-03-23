@@ -13,6 +13,7 @@ class CastRsveListItemResponse(BaseModel):
     start_time: datetime
     course_name: str
     location: Optional[str] = None
+    station_name: Optional[str] = None
     course_price: int
     traffic_fee: int
     last_message_time: Optional[datetime] = None

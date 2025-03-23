@@ -12,6 +12,7 @@ from app.features.reserve.repositories.cast.cast_options_repository import (
     get_selected_options_by_reservation,
     check_belongs_to_cast
 )
+from app.db.models.station import Station
 
 def get_cast_options(db: Session, req: CastOptionRequest) -> CastOptionResponse:
     """
@@ -28,6 +29,14 @@ def get_cast_options(db: Session, req: CastOptionRequest) -> CastOptionResponse:
     # 2) この予約に紐づくオプション
     selected = get_selected_options_by_reservation(db, req.reservation_id)
 
+    # 駅IDから駅名を取得する辞書を作成
+    station_dict = {}
+    for row in selected:
+        if row.option_id:
+            station = db.query(Station).filter(Station.id == row.option_id).first()
+            if station:
+                station_dict[row.option_id] = station.name
+
     # 変換: pydanticへ渡す
     available_options = [
         {
@@ -42,9 +51,13 @@ def get_cast_options(db: Session, req: CastOptionRequest) -> CastOptionResponse:
     for row in selected:
         # マスターオプションの場合
         if row.option_id:
-            selected_options.append({
+            option_data = {
                 "option_id": row.option_id
-            })
+            }
+            # 駅IDの場合は駅名も追加
+            if row.option_id in station_dict:
+                option_data["station_name"] = station_dict[row.option_id]
+            selected_options.append(option_data)
         # 自由入力オプションの場合
         elif row.custom_option_name:
             selected_options.append({
