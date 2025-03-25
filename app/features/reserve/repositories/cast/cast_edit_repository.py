@@ -10,61 +10,72 @@ from app.features.reserve.schemas.cast.cast_edit_schema import CustomOption
 
 from app.db.models.station import Station
 
-def update_reservation(
-    db: Session,
-    reservation_id: int,
-    start_time: datetime,
-    end_time: datetime,
-    location: str,
-    reservation_note: Optional[str],
-    status: str
-) -> ResvReservation:
-    """予約本体の情報を更新する"""
-    
-    # 予約レコードを取得
-    reservation = db.query(ResvReservation).filter(
-        ResvReservation.id == reservation_id
-    ).first()
-    
-    if not reservation:
-        return None
-    
-    # 予約情報を更新
-    reservation.start_time = start_time
-    reservation.end_time = end_time
-    reservation.status = status
-    reservation.reservation_note = reservation_note
-    
-    # locationの処理
-    # 1. 数値のみ（駅ID）の場合
-    if location and location.strip().isdigit():
-        # 駅IDとして取り扱い
-        reservation.location = location.strip()
-        # 駅に関連する緯度経度を設定
-        try:
-            station = db.query(Station).filter(Station.id == int(location.strip())).first()
-            if station and station.lat and station.lon:
-                reservation.latitude = station.lat
-                reservation.longitude = station.lon
-        except Exception as e:
-            print(f"DEBUG - 駅情報取得エラー: {e}")
-    # 2. 「緯度,経度」フォーマットの場合
-    else:
-        reservation.location = location
-        try:
-            parts = location.split(',')
-            if len(parts) == 2:
-                latitude, longitude = parts
-                reservation.latitude = float(latitude.strip())
-                reservation.longitude = float(longitude.strip())
-        except (ValueError, AttributeError) as e:
-            print(f"DEBUG - 位置情報解析エラー: {e}")
-            # フォーマットが不正な場合は位置情報更新をスキップ
-            pass
-    
-    db.commit()
-    db.refresh(reservation)
-    return reservation
+def update_reservation(db: Session, reservation_data: dict):
+    """予約情報を更新する
+
+    Args:
+        db (Session): DBセッション
+        reservation_data (dict): 予約データ
+            - reservation_id: 予約ID
+            - cast_id: キャストID
+            - course_id: コースID
+            - start_time: 開始時間
+            - end_time: 終了時間
+            - location: 場所
+            - reservation_note: 予約メモ
+            - status: ステータス
+
+    Returns:
+        ResvReservation: 更新された予約情報
+    """
+    try:
+        reservation = db.query(ResvReservation).filter(ResvReservation.id == reservation_data["reservation_id"]).first()
+
+        if not reservation:
+            raise ValueError(f"Reservation not found: {reservation_data['reservation_id']}")
+        
+        # 予約情報を更新
+        reservation.cast_id = reservation_data["cast_id"]
+        reservation.course_id = reservation_data["course_id"]  # コースIDを更新
+        reservation.start_time = reservation_data["start_time"]
+        reservation.end_time = reservation_data["end_time"]
+        reservation.location = reservation_data["location"]
+        reservation.reservation_note = reservation_data["reservation_note"]
+        reservation.status = reservation_data["status"]
+        
+        # locationの処理
+        # 1. 数値のみ（駅ID）の場合
+        if reservation.location and reservation.location.strip().isdigit():
+            # 駅IDとして取り扱い
+            reservation.location = reservation.location.strip()
+            # 駅に関連する緯度経度を設定
+            try:
+                station = db.query(Station).filter(Station.id == int(reservation.location.strip())).first()
+                if station and station.lat and station.lon:
+                    reservation.latitude = station.lat
+                    reservation.longitude = station.lon
+            except Exception as e:
+                print(f"DEBUG - 駅情報取得エラー: {e}")
+        # 2. 「緯度,経度」フォーマットの場合
+        else:
+            try:
+                parts = reservation.location.split(',')
+                if len(parts) == 2:
+                    latitude, longitude = parts
+                    reservation.latitude = float(latitude.strip())
+                    reservation.longitude = float(longitude.strip())
+            except (ValueError, AttributeError) as e:
+                print(f"DEBUG - 位置情報解析エラー: {e}")
+                # フォーマットが不正な場合は位置情報更新をスキップ
+                pass
+        
+        db.commit()
+        db.refresh(reservation)
+        
+        return reservation
+    except Exception as e:
+        db.rollback()
+        raise e
 
 
 def add_status_history(
@@ -110,20 +121,12 @@ def update_reservation_options(
         for i, opt in enumerate(custom_options):
             print(f"  #{i+1}: name={opt.name}, price={opt.price}")
     
-        # 既存のオプションを全て論理削除 (ソフトデリート)
+        # 既存のオプションをすべて物理削除（完全に削除して再作成する方式に変更）
         db.query(ResvReservationOption).filter(
             ResvReservationOption.reservation_id == reservation_id
-        ).update({"status": "removed"}, synchronize_session=False)
+        ).delete(synchronize_session=False)
         
-        print(f"DEBUG - [リポジトリ層] 既存オプションを論理削除済み")
-        
-        # 現在のDB状態を確認
-        current_options = db.query(ResvReservationOption).filter(
-            ResvReservationOption.reservation_id == reservation_id
-        ).all()
-        print(f"DEBUG - [リポジトリ層] 現在のオプション数: {len(current_options)}")
-        for opt in current_options:
-            print(f"  ID={opt.option_id}, custom_name={opt.custom_name}, status={opt.status}")
+        print(f"DEBUG - [リポジトリ層] 既存オプションをすべて物理削除済み")
         
         # マスターオプションを登録
         for option_id in option_ids:
@@ -138,38 +141,17 @@ def update_reservation_options(
                 print(f"DEBUG - [リポジトリ層] マスターオプション取得: ID={option_id}, 価格={option_price}")
             else:
                 print(f"DEBUG - [リポジトリ層] マスターオプション未取得: ID={option_id}")
-                
-            # 既存のオプションを確認し、存在する場合は再アクティベート
-            existing_option = db.query(ResvReservationOption).filter(
-                ResvReservationOption.reservation_id == reservation_id,
-                ResvReservationOption.option_id == option_id
-            ).first()
             
-            if existing_option:
-                print(f"DEBUG - [リポジトリ層] 既存オプション再アクティベート: ID={option_id}")
-                existing_option.option_price = option_price
-                existing_option.status = "active"
-                existing_option.custom_name = None
-            else:
-                # 新規オプションの場合
-                print(f"DEBUG - [リポジトリ層] 新規オプション追加: ID={option_id}, 価格={option_price}")
-                option = ResvReservationOption(
-                    reservation_id=reservation_id,
-                    option_id=option_id,
-                    option_price=option_price,
-                    custom_name=None,
-                    status="active"
-                )
-                db.add(option)
-        
-        # カスタムオプションを登録する前にまず既存のカスタムオプションをすべて物理削除
-        # これにより重複を完全に防止
-        db.query(ResvReservationOption).filter(
-            ResvReservationOption.reservation_id == reservation_id,
-            ResvReservationOption.option_id == 0  # カスタムオプションはoption_id=0
-        ).delete(synchronize_session=False)
-        
-        print(f"DEBUG - [リポジトリ層] 既存のカスタムオプションを削除済み")
+            # 新規オプションとして追加
+            print(f"DEBUG - [リポジトリ層] オプション追加: ID={option_id}, 価格={option_price}")
+            option = ResvReservationOption(
+                reservation_id=reservation_id,
+                option_id=option_id,
+                option_price=option_price,
+                custom_name=None,
+                status="active"
+            )
+            db.add(option)
         
         # カスタムオプションを登録（一意の名前をチェックして重複防止）
         custom_option_names = set()  # 登録済み名前を追跡

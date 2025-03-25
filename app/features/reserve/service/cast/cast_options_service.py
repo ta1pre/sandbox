@@ -59,10 +59,10 @@ def get_cast_options(db: Session, req: CastOptionRequest) -> CastOptionResponse:
                 option_data["station_name"] = station_dict[row.option_id]
             selected_options.append(option_data)
         # 自由入力オプションの場合
-        elif row.custom_option_name:
+        elif row.custom_name:  
             selected_options.append({
-                "custom_option_name": row.custom_option_name,
-                "custom_option_price": row.custom_option_price
+                "custom_option_name": row.custom_name,  
+                "custom_option_price": row.option_price
             })
 
     return CastOptionResponse(

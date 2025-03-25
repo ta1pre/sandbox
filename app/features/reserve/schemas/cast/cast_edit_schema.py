@@ -13,6 +13,7 @@ class CastReservationEditRequest(BaseModel):
     """予約編集リクエストスキーマ"""
     reservation_id: int = Field(..., description="予約ID")
     cast_id: int = Field(..., description="キャストID")
+    course_id: int = Field(..., description="コースID")  
     start_time: datetime = Field(..., description="施術開始時間")
     end_time: datetime = Field(..., description="施術終了時間")
     location: str = Field(..., description="施術場所（駅IDまたは緯度,経度）")

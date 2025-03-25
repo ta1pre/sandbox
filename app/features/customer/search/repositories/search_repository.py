@@ -75,6 +75,11 @@ def get_casts(limit: int, offset: int, sort: str, filters: dict, db: Session):
         stmt = stmt.where(CastCommonProf.support_area == filters["prefecture_id"])
         print(f"【適用フィルター】 エリア（support_area）: {filters['prefecture_id']}")
 
+    # ✅ キャストタイプフィルター
+    if "cast_type" in filters:
+        stmt = stmt.where(CastCommonProf.cast_type == filters["cast_type"])
+        print(f"【適用フィルター】 キャストタイプ: {filters['cast_type']}")
+
     # 並べ替え条件
     sort_options = {
         "age_desc": CastCommonProf.age.desc(),

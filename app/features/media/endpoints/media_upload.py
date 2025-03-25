@@ -86,8 +86,8 @@ def register_media(
         db.commit()
         db.refresh(new_media)
 
-        print(f"[INFO] ✅ 新しいメディア登録成功: {new_media.file_url}")
-        return {"status": "success", "file_url": new_media.file_url}
+        print(f"[INFO] ✅ 新しいメディア登録成功: {new_media.file_url}, ID: {new_media.id}")
+        return {"status": "success", "file_url": new_media.file_url, "id": new_media.id}
 
     except Exception as e:
         db.rollback()

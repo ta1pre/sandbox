@@ -53,14 +53,19 @@ def edit_reservation(
     prev_status = reservation.status
     
     # 2. 予約本体の更新
+    reservation_data = {
+        "reservation_id": req.reservation_id,
+        "cast_id": req.cast_id,
+        "course_id": req.course_id,
+        "start_time": req.start_time,
+        "end_time": req.end_time,
+        "location": req.location,
+        "reservation_note": req.reservation_note,
+        "status": req.status
+    }
     updated_reservation = update_reservation(
         db,
-        req.reservation_id,
-        req.start_time,
-        req.end_time,
-        req.location,
-        req.reservation_note,
-        req.status
+        reservation_data
     )
     
     if not updated_reservation:

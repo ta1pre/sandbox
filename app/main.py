@@ -27,7 +27,9 @@ def root():
 
 origins = [
     FRONTEND_URL,
-    "http://localhost:3000"  # 必要ならローカルも追加
+    "http://localhost:3000",  # 必要ならローカルも追加
+    "https://60c151628549.ngrok.app",  # 現在のフロントエンドngrok URL
+    "https://a8166f23e4a5.ngrok.app"  # バックエンドngrok URL
 ]
 
 app.add_middleware(

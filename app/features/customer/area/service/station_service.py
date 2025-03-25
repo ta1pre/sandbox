@@ -1,3 +1,4 @@
+#app/features/customer/area/service/station_service.py
 from sqlalchemy.orm import Session
 from sqlalchemy import func, literal_column
 from app.db.models.station import Station
@@ -7,6 +8,7 @@ from pyproj import Geod
 from collections import defaultdict
 from app.features.customer.area.repositories.station_repository import get_user_station
 from app.features.customer.area.schemas.station_schema import StationResponse
+from fastapi import HTTPException
 
 geod = Geod(ellps="WGS84")
 
@@ -73,7 +75,7 @@ def fetch_current_station(db: Session, user_id: int):
     """現在の最寄り駅を取得するサービス"""
     station = get_user_station(db, user_id)
     if not station:
-        return None
+        raise HTTPException(status_code=404, detail="最寄り駅が見つかりません")
     
     return StationResponse(
         id=station.id,

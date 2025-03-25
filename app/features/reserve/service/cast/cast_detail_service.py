@@ -97,7 +97,10 @@ def get_reservation_detail(db: Session, reservation_id: int, cast_id: int) -> Ca
             ResvReservationOption.custom_name,
             ResvReservationOption.option_price,
         )
-        .filter(ResvReservationOption.reservation_id == reservation_id)
+        .filter(
+            ResvReservationOption.reservation_id == reservation_id,
+            ResvReservationOption.status == "active"  # アクティブなオプションのみ取得
+        )
         .all()
     )
     

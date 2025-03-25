@@ -12,6 +12,9 @@ from app.features.reserve.schemas.cast.cast_station_schema import (
 from app.features.reserve.service.cast.cast_station_service import suggest_stations, update_station
 from typing import List
 
+from app.features.reserve.schemas.cast.cast_course_schema import CastCourseListResponse
+from app.features.reserve.service.cast.cast_course_service import get_cast_courses, get_all_courses, get_filtered_courses
+
 
 cast_router = APIRouter()
 
@@ -124,3 +127,31 @@ def edit_reservation_endpoint(request: CastReservationEditRequest, db: Session =
     response = edit_reservation(db, request)
     return response
 
+
+# ✅ コース一覧取得API
+@cast_router.post("/courses", response_model=CastCourseListResponse)
+def fetch_cast_courses(request: dict, db: Session = Depends(get_db)):
+    """
+    キャストのコース一覧を取得するエンドポイント
+    """
+    cast_id = request.get("cast_id")
+    return get_cast_courses(db, cast_id)
+
+@cast_router.post("/all-courses", response_model=CastCourseListResponse)
+def fetch_all_courses(db: Session = Depends(get_db)):
+    """
+    全てのアクティブなコースを取得するエンドポイント
+    """
+    return get_all_courses(db)
+
+@cast_router.post("/filtered-courses", response_model=CastCourseListResponse)
+def fetch_filtered_courses(request: dict = None, db: Session = Depends(get_db)):
+    """
+    キャストのフィルタリング条件に基づいてコースの一覧を取得するエンドポイント
+    
+    requestにキャストIDが含まれる場合、キャストのフィルタリング条件に基づいてコースの一覧を取得する
+    """
+    cast_id = None
+    if request:
+        cast_id = request.get("cast_id")
+    return get_filtered_courses(db, cast_id)

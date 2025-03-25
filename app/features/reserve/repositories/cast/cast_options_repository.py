@@ -35,7 +35,10 @@ def get_selected_options_by_reservation(db: Session, reservation_id: int):
             ResvReservationOption.custom_name,
             ResvReservationOption.option_price
         )
-        .where(ResvReservationOption.reservation_id == reservation_id)
+        .where(
+            ResvReservationOption.reservation_id == reservation_id,
+            ResvReservationOption.status == "active"  # アクティブなオプションのみ取得
+        )
     )
     return db.execute(stmt).mappings().all()
 
